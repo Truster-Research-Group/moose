@@ -30,6 +30,7 @@ class FunctionParserBase
 
 #include <tuple>
 #include <unordered_map>
+#include <mutex>
 
 // Forward declarations
 class Action;
@@ -1072,6 +1073,9 @@ private:
   // For setting _from_legacy_construction (remove with #19440)
   template <typename T>
   friend InputParameters validParams();
+
+  /// A mutex to prevent concurrent read/write of cache variables
+  mutable std::mutex _cache_mutex;
 };
 
 template <typename T>
