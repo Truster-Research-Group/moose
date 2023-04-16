@@ -17,6 +17,8 @@ namespace libMesh
 class PeriodicBoundaryBase;
 }
 
+const MultiMooseEnum enforcementType("strong_enforcement weak_enforcement");
+
 /**
  * This Action adds a periodic boundary to the problem. Note that Periodic Boundaries
  * are not MooseObjects so you need not specify a type for these boundaries.  If you

@@ -198,8 +198,17 @@ NonlinearThread::onInterface(const Elem * elem, unsigned int side, BoundaryID bn
   if (_ik_warehouse->hasActiveBoundaryObjects(bnd_id, _tid))
   {
 
+    // const auto & int_ks = _ik_warehouse->getActiveBoundaryObjects(bnd_id, _tid);
+    // const auto & interface_kernel = int_ks.begin();
+    // (*interface_kernel).variable().number();
+    // _mesh.getMesh().get_dof_map().get_periodic_boundaries();
+    const Elem * neighbor  = elem->topological_neighbor(side,
+       _mesh.getMesh(),
+       *(_mesh.getMesh().sub_point_locator()),
+       _nl.dofMap().get_periodic_boundaries());
+      //  _nl._sys.get_dof_map().get_periodic_boundaries());
     // Pointer to the neighbor we are currently working on.
-    const Elem * neighbor = elem->neighbor_ptr(side);
+    // const Elem * neighbor = elem->neighbor_ptr(side);
 
     if (neighbor->active())
     {
