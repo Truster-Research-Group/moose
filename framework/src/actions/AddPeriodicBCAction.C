@@ -47,6 +47,9 @@ AddPeriodicBCAction::validParams()
                                             "Functions that specify the inverse transformation");
 
   params.addParam<std::vector<VariableName>>("variable", "Variable for the periodic boundary");
+  params.addParam<MultiMooseEnum>("enforcement_type",
+                                  enforcementType,
+                                  "Type of enforcement: strong_enforcement or weak_enforcement.");
   params.addClassDescription("Action that adds periodic boundary conditions");
   return params;
 }
@@ -202,6 +205,14 @@ AddPeriodicBCAction::act()
         p.myboundary = _mesh->getBoundaryID(getParam<BoundaryName>("primary"));
         p.pairedboundary = _mesh->getBoundaryID(getParam<BoundaryName>("secondary"));
         setPeriodicVars(p, getParam<std::vector<VariableName>>("variable"));
+
+        // Enforcement type
+        if (_pars.isParamValid("enforcement_type"))
+        {
+          // auto e_type = getParam<MultiMooseEnum>("enforcement_type");
+          // p.set_enforcement_type(e_type);
+          p.set_enforcement_type(EnforcementType::WEAK_ENFORCEMENT);
+        }
 
         auto & eq = _problem->es();
         for (const auto i : make_range(eq.n_systems()))
