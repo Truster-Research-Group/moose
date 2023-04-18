@@ -628,6 +628,14 @@ DisplacedProblem::setNeighborSubdomainID(const Elem * elem, unsigned int side, T
 }
 
 void
+DisplacedProblem::setNeighborSubdomainID(const Elem * elem, THREAD_ID tid)
+{
+  SubdomainID did = elem->subdomain_id();
+  for (auto & assembly : _assembly[tid])
+    assembly->setCurrentNeighborSubdomainID(did);
+}
+
+void
 DisplacedProblem::prepareBlockNonlocal(unsigned int ivar,
                                        unsigned int jvar,
                                        const std::vector<dof_id_type> & idof_indices,
@@ -807,10 +815,7 @@ DisplacedProblem::reinitPeriodicNeighbor(const Elem * elem,
                                          THREAD_ID tid,
                                          const std::vector<Point> * neighbor_reference_points)
 {
-  setNeighborSubdomainID(elem, side, tid);
-
-  const Elem * neighbor = elem->neighbor_ptr(side);
-  unsigned int neighbor_side = neighbor->which_neighbor_am_i(elem);
+  setNeighborSubdomainID(neighbor, tid);
 
   for (const auto nl_sys_num : index_range(_displaced_nl))
   {
