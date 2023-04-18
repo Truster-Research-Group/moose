@@ -22,6 +22,7 @@
 #include "ComputeJacobianThread.h"
 
 #include "libmesh/threads.h"
+#include "libmesh/periodic_boundaries.h" // translation PBCs provided by libmesh
 
 NonlinearThread::NonlinearThread(FEProblemBase & fe_problem)
   : ThreadedElementLoop<ConstElemRange>(fe_problem),
@@ -197,6 +198,9 @@ NonlinearThread::onInterface(const Elem * elem, unsigned int side, BoundaryID bn
 {
   if (_ik_warehouse->hasActiveBoundaryObjects(bnd_id, _tid))
   {
+
+    auto b_id = _nl.dofMap().get_periodic_boundaries()->boundary(bnd_id);
+    std::cout << "side " << side << " boundary " << b_id << std::endl;
 
     // const auto & int_ks = _ik_warehouse->getActiveBoundaryObjects(bnd_id, _tid);
     // const auto & interface_kernel = int_ks.begin();
