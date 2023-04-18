@@ -187,6 +187,7 @@ public:
                        THREAD_ID tid) override;
   virtual void setCurrentSubdomainID(const Elem * elem, THREAD_ID tid) override;
   virtual void setNeighborSubdomainID(const Elem * elem, unsigned int side, THREAD_ID tid) override;
+  virtual void setNeighborSubdomainID(const Elem * elem, THREAD_ID tid);
   virtual void prepareBlockNonlocal(unsigned int ivar,
                                     unsigned int jvar,
                                     const std::vector<dof_id_type> & idof_indices,
@@ -208,6 +209,11 @@ public:
   virtual void reinitNodes(const std::vector<dof_id_type> & nodes, THREAD_ID tid) override;
   virtual void reinitNodesNeighbor(const std::vector<dof_id_type> & nodes, THREAD_ID tid) override;
   virtual void reinitNeighbor(const Elem * elem, unsigned int side, THREAD_ID tid) override;
+  virtual void reinitPeriodicNeighbor(const Elem * elem,
+                                      unsigned int side,
+                                      const Elem * neighbor,
+                                      unsigned int neigh_side,
+                                      THREAD_ID tid) override;
 
   /**
    * reinitialize neighbor routine
@@ -222,6 +228,24 @@ public:
                       unsigned int side,
                       THREAD_ID tid,
                       const std::vector<Point> * neighbor_reference_points);
+
+  /**
+   * reinitialize periodic neighbor routine
+   * @param elem The element driving the reinit (note that this is not the *neighbor*)
+   * @param side The side, e.g. face,  of the \p elem that we want to reinit
+   * @param elem The neighbor element being reinitialized
+   * @param neigh_side The side, e.g. face,  of the \p neighbor that we want to reinit
+   * @param tid The thread for which we are reiniting
+   * @param neighbor_reference_points Specify the referrence points for the
+   *                                  neighbor element. Useful if the element and neighbor faces are
+   *                                  not coincident
+   */
+  void reinitPeriodicNeighbor(const Elem * elem,
+                              unsigned int side,
+                              const Elem * neighbor,
+                              unsigned int neigh_side,
+                              THREAD_ID tid,
+                              const std::vector<Point> * neighbor_reference_points);
 
   virtual void reinitNeighborPhys(const Elem * neighbor,
                                   unsigned int neighbor_side,

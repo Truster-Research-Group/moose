@@ -1,7 +1,7 @@
 [Mesh]
   [msh]
   type = FileMeshGenerator
-  file = bilinear_split_in.e
+  file = bilinear_refined_in.e
   []
 []
 
