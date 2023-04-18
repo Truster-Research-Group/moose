@@ -1,7 +1,45 @@
 [Mesh]
   [msh]
-  type = FileMeshGenerator
-  file = bilinear_split_in.e
+    type = GeneratedMeshGenerator
+    dim = 2
+    xmax = 1
+    ymax = 2
+    nx = 1
+    ny = 2
+  []
+  [block1]
+    type = SubdomainBoundingBoxGenerator
+    input = 'msh'
+    bottom_left = '0 0 0'
+    top_right = '1 1 0'
+    block_id = 1
+    block_name = 'block1'
+  []
+  [block2]
+    type = SubdomainBoundingBoxGenerator
+    input = 'block1'
+    bottom_left = '0 1 0'
+    top_right = '1 2 0'
+    block_id = 2
+    block_name = 'block2'
+  []
+  [split]
+    type = BreakMeshByBlockGenerator
+    input = block2
+    add_interface_on_two_sides = true
+    split_interface = true
+  []
+  [top_node]
+    type = ExtraNodesetGenerator
+    coord = '0 2 0'
+    input = split
+    new_boundary = top_node
+  []
+  [bottom_node]
+    type = ExtraNodesetGenerator
+    coord = '0 0 0'
+    input = top_node
+    new_boundary = bottom_node
   []
 []
 
@@ -103,10 +141,17 @@
   []
 []
 
+[Preconditioning]
+  [smp]
+    type = SMP
+    full = true
+  []
+[]
+
 [Executioner]
   type = Transient
 
-  solve_type = 'JFNK'
+  solve_type = 'NEWTON'
   line_search = none
 
   petsc_options_iname = '-pc_type'
@@ -127,5 +172,4 @@
 
 [Outputs]
   exodus = true
-  console = true
 []
