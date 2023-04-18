@@ -122,6 +122,30 @@ public:
   virtual void onInterface(const Elem * elem, unsigned int side, BoundaryID bnd_id);
 
   /**
+   * Called before evaluations on a periodic boundary element side
+   *
+   * @param elem - Element we are on
+   * @param side - local side number of the element 'elem'
+   */
+  virtual void prePeriodicBoundary(const Elem * elem, unsigned int side);
+
+  /**
+   * Called when doing weak periodic boundary edge assembling
+   *
+   * @param elem - Element we are on
+   * @param side - local side number of the element 'elem'
+   */
+  virtual void onPeriodicBoundary(const Elem * elem, unsigned int side);
+
+  /**
+   * Called after evaluations on a periodic boundary element side
+   *
+   * @param elem - Element we are on
+   * @param side - local side number of the element 'elem'
+   */
+  virtual void postPeriodicBoundary(const Elem * elem, unsigned int side);
+
+  /**
    * Called every time the current subdomain changes (i.e. the subdomain of _this_ element
    * is not the same as the subdomain of the last element).  Beware of over-using this!
    * You might think that you can do some expensive stuff in here and get away with it...
@@ -290,6 +314,14 @@ ThreadedElementLoopBase<RangeType>::operator()(const RangeType & range, bool byp
 
             postInternalSide(elem, side);
           }
+          else // handle weak periodic boundary enforcement using interface kernels
+          {
+            prePeriodicBoundary(elem, side);
+
+            onPeriodicBoundary(elem, side);
+
+            postPeriodicBoundary(elem, side);
+          }
         } // sides
 
         postElement(elem);
@@ -384,6 +416,27 @@ void
 ThreadedElementLoopBase<RangeType>::onInterface(const Elem * /*elem*/,
                                                 unsigned int /*side*/,
                                                 BoundaryID /*bnd_id*/)
+{
+}
+
+template <typename RangeType>
+void
+ThreadedElementLoopBase<RangeType>::prePeriodicBoundary(const Elem * /*elem*/,
+                                                        unsigned int /*side*/)
+{
+}
+
+template <typename RangeType>
+void
+ThreadedElementLoopBase<RangeType>::onPeriodicBoundary(const Elem * /*elem*/,
+                                                        unsigned int /*side*/)
+{
+}
+
+template <typename RangeType>
+void
+ThreadedElementLoopBase<RangeType>::postPeriodicBoundary(const Elem * /*elem*/,
+                                                        unsigned int /*side*/)
 {
 }
 

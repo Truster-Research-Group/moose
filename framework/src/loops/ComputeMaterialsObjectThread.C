@@ -315,6 +315,109 @@ ComputeMaterialsObjectThread::onInterface(const Elem * elem, unsigned int side, 
 }
 
 void
+ComputeMaterialsObjectThread::onPeriodicBoundary(const Elem * elem, unsigned int side)
+{
+  // get neighbor stuff here
+  const Elem * neighbor = elem->neighbor_ptr(side);
+  if (!neighbor)
+    return;
+  unsigned int neighbor_side = neighbor->which_neighbor_am_i(_assembly[_tid][0]->elem());
+
+  std::vector<BoundaryID> boundary_ids = _mesh.getBoundaryIDs(elem, side);
+
+  for (std::vector<BoundaryID>::iterator it = boundary_ids.begin(); it != boundary_ids.end(); ++it)
+  {
+    BoundaryID bnd_id = *it;
+
+    if (!_fe_problem.needInterfaceMaterialOnSide(bnd_id, _tid))
+      return;
+
+    _fe_problem.reinitElemFace(elem, side, bnd_id, _tid);
+    unsigned int face_n_points = _assembly[_tid][0]->qRuleFace()->n_points();
+    _bnd_material_data[_tid]->resize(face_n_points);
+    _neighbor_material_data[_tid]->resize(face_n_points);
+
+    if (_has_bnd_stateful_props)
+    {
+      // Face Materials
+      if (_discrete_materials[Moose::FACE_MATERIAL_DATA].hasActiveBlockObjects(_subdomain, _tid))
+        _bnd_material_props.initStatefulProps(
+            *_bnd_material_data[_tid],
+            _discrete_materials[Moose::FACE_MATERIAL_DATA].getActiveBlockObjects(_subdomain, _tid),
+            face_n_points,
+            *elem,
+            side);
+
+      if (_materials[Moose::FACE_MATERIAL_DATA].hasActiveBlockObjects(_subdomain, _tid))
+        _bnd_material_props.initStatefulProps(
+            *_bnd_material_data[_tid],
+            _materials[Moose::FACE_MATERIAL_DATA].getActiveBlockObjects(_subdomain, _tid),
+            face_n_points,
+            *elem,
+            side);
+
+      // Boundary Materials
+      if (_discrete_materials.hasActiveBoundaryObjects(bnd_id, _tid))
+        _bnd_material_props.initStatefulProps(*_bnd_material_data[_tid],
+                                              _materials.getActiveBoundaryObjects(bnd_id, _tid),
+                                              face_n_points,
+                                              *elem,
+                                              side);
+
+      if (_materials.hasActiveBoundaryObjects(bnd_id, _tid))
+        _bnd_material_props.initStatefulProps(*_bnd_material_data[_tid],
+                                              _materials.getActiveBoundaryObjects(bnd_id, _tid),
+                                              face_n_points,
+                                              *elem,
+                                              side);
+    }
+
+    // Do we have neighbor stateful properties or do we have stateful interface material properties?
+    // If either then we need to reinit the neighbor, so at least at a minimum _neighbor_elem isn't
+    // NULL!
+    if (neighbor->active() &&
+        (_has_neighbor_stateful_props ||
+         (_has_bnd_stateful_props && _interface_materials.hasActiveBoundaryObjects(bnd_id, _tid))))
+      _fe_problem.reinitNeighbor(elem, side, _tid);
+
+  // get neighbor stuff here DIFFERENTLY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    if (_has_neighbor_stateful_props && neighbor->active())
+    {
+      // Neighbor Materials
+      if (_discrete_materials[Moose::NEIGHBOR_MATERIAL_DATA].hasActiveBlockObjects(
+              neighbor->subdomain_id(), _tid))
+        _neighbor_material_props.initStatefulProps(
+            *_bnd_material_data[_tid],
+            _discrete_materials[Moose::NEIGHBOR_MATERIAL_DATA].getActiveBlockObjects(
+                neighbor->subdomain_id(), _tid),
+            face_n_points,
+            *elem,
+            side);
+
+      if (_materials[Moose::NEIGHBOR_MATERIAL_DATA].hasActiveBlockObjects(neighbor->subdomain_id(),
+                                                                          _tid))
+        _neighbor_material_props.initStatefulProps(
+            *_neighbor_material_data[_tid],
+            _materials[Moose::NEIGHBOR_MATERIAL_DATA].getActiveBlockObjects(
+                neighbor->subdomain_id(), _tid),
+            face_n_points,
+            *neighbor,
+            neighbor_side);
+    }
+
+    // Interface Materials. Make sure we do these after neighbors
+    if (_has_bnd_stateful_props && _interface_materials.hasActiveBoundaryObjects(bnd_id, _tid))
+      _bnd_material_props.initStatefulProps(
+          *_bnd_material_data[_tid],
+          _interface_materials.getActiveBoundaryObjects(bnd_id, _tid),
+          face_n_points,
+          *elem,
+          side);
+  }
+}
+
+void
 ComputeMaterialsObjectThread::join(const ComputeMaterialsObjectThread & /*y*/)
 {
 }
