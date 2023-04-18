@@ -199,20 +199,8 @@ NonlinearThread::onInterface(const Elem * elem, unsigned int side, BoundaryID bn
   if (_ik_warehouse->hasActiveBoundaryObjects(bnd_id, _tid))
   {
 
-    auto b_id = _nl.dofMap().get_periodic_boundaries()->boundary(bnd_id);
-    std::cout << "side " << side << " boundary " << b_id << std::endl;
-
-    // const auto & int_ks = _ik_warehouse->getActiveBoundaryObjects(bnd_id, _tid);
-    // const auto & interface_kernel = int_ks.begin();
-    // (*interface_kernel).variable().number();
-    // _mesh.getMesh().get_dof_map().get_periodic_boundaries();
-    const Elem * neighbor  = elem->topological_neighbor(side,
-       _mesh.getMesh(),
-       *(_mesh.getMesh().sub_point_locator()),
-       _nl.dofMap().get_periodic_boundaries());
-      //  _nl._sys.get_dof_map().get_periodic_boundaries());
     // Pointer to the neighbor we are currently working on.
-    // const Elem * neighbor = elem->neighbor_ptr(side);
+    const Elem * neighbor = elem->neighbor_ptr(side);
 
     if (neighbor->active())
     {
@@ -239,6 +227,61 @@ NonlinearThread::onInterface(const Elem * elem, unsigned int side, BoundaryID bn
       {
         Threads::spin_mutex::scoped_lock lock(Threads::spin_mtx);
         accumulateNeighbor();
+      }
+    }
+  }
+}
+
+void
+NonlinearThread::onPeriodicBoundary(const Elem * elem, unsigned int side)
+{
+  // get neighbor stuff here
+  unsigned int neighbor_side = 0;
+  unsigned int * neighbor_side_ptr = &neighbor_side;
+  const Elem * neighbor = elem->topological_neighbor_side(side,
+                                                      _mesh.getMesh(),
+                                                      *(_mesh.getMesh().sub_point_locator()),
+                                                      _nl.dofMap().get_periodic_boundaries(),
+                                                      neighbor_side_ptr);
+  if (!neighbor || !(neighbor->active()))
+    return;
+
+  std::vector<BoundaryID> boundary_ids = _mesh.getBoundaryIDs(elem, side);
+
+  for (std::vector<BoundaryID>::iterator it = boundary_ids.begin(); it != boundary_ids.end(); ++it)
+  {
+    BoundaryID bnd_id = *it;
+
+    if (_ik_warehouse->hasActiveBoundaryObjects(bnd_id, _tid))
+    {
+      if (neighbor->active())
+      {
+        // CHANGE NEIGHBOR STUFF HERE
+        _fe_problem.reinitNeighbor(elem, side, _tid);
+
+        // Set up Sentinels so that, even if one of the reinitMaterialsXXX() calls throws, we
+        // still remember to swap back during stack unwinding. Note that face, boundary, and
+        // interface all operate with the same MaterialData object
+        SwapBackSentinel face_sentinel(_fe_problem, &FEProblem::swapBackMaterialsFace, _tid);
+        _fe_problem.reinitMaterialsFace(elem->subdomain_id(), _tid);
+        _fe_problem.reinitMaterialsBoundary(bnd_id, _tid);
+
+        SwapBackSentinel neighbor_sentinel(
+            _fe_problem, &FEProblem::swapBackMaterialsNeighbor, _tid);
+        _fe_problem.reinitMaterialsNeighbor(neighbor->subdomain_id(), _tid);
+
+        // Has to happen after face and neighbor properties have been computed. Note that we don't
+        // use a sentinel here because FEProblem::swapBackMaterialsFace is going to handle face
+        // materials, boundary materials, and interface materials (e.g. it queries the boundary
+        // material data with the current element and side
+        _fe_problem.reinitMaterialsInterface(bnd_id, _tid);
+
+        computeOnInterface(bnd_id);
+
+        {
+          Threads::spin_mutex::scoped_lock lock(Threads::spin_mtx);
+          accumulateNeighbor();
+        }
       }
     }
   }
