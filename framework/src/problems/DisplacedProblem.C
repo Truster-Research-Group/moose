@@ -790,6 +790,49 @@ DisplacedProblem::reinitNeighbor(const Elem * elem,
 }
 
 void
+DisplacedProblem::reinitPeriodicNeighbor(const Elem * elem, 
+                                         unsigned int side,
+                                         const Elem * neighbor,
+                                         unsigned int neighbor_side,
+                                         THREAD_ID tid)
+{
+  reinitPeriodicNeighbor(elem, side, neighbor, neighbor_side,tid, nullptr);
+}
+
+void
+DisplacedProblem::reinitPeriodicNeighbor(const Elem * elem,
+                                         unsigned int side,
+                                         const Elem * neighbor,
+                                         unsigned int neighbor_side,
+                                         THREAD_ID tid,
+                                         const std::vector<Point> * neighbor_reference_points)
+{
+  setNeighborSubdomainID(elem, side, tid);
+
+  const Elem * neighbor = elem->neighbor_ptr(side);
+  unsigned int neighbor_side = neighbor->which_neighbor_am_i(elem);
+
+  for (const auto nl_sys_num : index_range(_displaced_nl))
+  {
+    _assembly[tid][nl_sys_num]->reinitElemAndNeighbor(
+        elem, side, neighbor, neighbor_side, neighbor_reference_points);
+    _displaced_nl[nl_sys_num]->prepareNeighbor(tid);
+    // Called during stateful material property evaluation outside of solve
+    _assembly[tid][nl_sys_num]->prepareNeighbor();
+  }
+  _displaced_aux->prepareNeighbor(tid);
+
+  BoundaryID bnd_id = 0; // some dummy number (it is not really used for anything, right now)
+  for (auto & nl : _displaced_nl)
+  {
+    nl->reinitElemFace(elem, side, bnd_id, tid);
+    nl->reinitNeighborFace(neighbor, neighbor_side, bnd_id, tid);
+  }
+  _displaced_aux->reinitElemFace(elem, side, bnd_id, tid);
+  _displaced_aux->reinitNeighborFace(neighbor, neighbor_side, bnd_id, tid);
+}
+
+void
 DisplacedProblem::reinitNeighborPhys(const Elem * neighbor,
                                      unsigned int neighbor_side,
                                      const std::vector<Point> & physical_points,

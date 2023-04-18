@@ -1898,6 +1898,57 @@ Assembly::reinitElemAndNeighbor(const Elem * elem,
 }
 
 void
+Assembly::reinitPeriodicElemAndNeighbor(const Elem * elem,
+                                        unsigned int side,
+                                        const Elem * neighbor,
+                                        unsigned int neighbor_side,
+                                        const std::vector<Point> * neighbor_reference_points)
+{
+  _current_neighbor_side = neighbor_side;
+
+  reinit(elem, side);
+
+  std::vector<Point> elem_physical_points = _current_q_points_face.stdVector();
+  Point pe = elem->build_side_ptr(side)->vertex_average();
+  Point pn = neighbor->build_side_ptr(neighbor_side)->vertex_average();
+  Point offset = pn - pe;
+  for (auto & each_point : elem_physical_points)
+  {
+    each_point += offset;
+  }
+
+  unsigned int neighbor_dim = neighbor->dim();
+
+  const std::vector<Point> * reference_points_ptr;
+  std::vector<Point> reference_points;
+
+  if (neighbor_reference_points)
+    reference_points_ptr = neighbor_reference_points;
+  else
+  {
+    FEInterface::inverse_map(
+        neighbor_dim, FEType(), neighbor, elem_physical_points, reference_points);
+    reference_points_ptr = &reference_points;
+  }
+
+  _current_neighbor_side_elem = &_current_neighbor_side_elem_builder(*neighbor, neighbor_side);
+
+  if (_need_JxW_neighbor)
+  {
+    // first do the side element. We need to do this to at a minimum get the correct JxW for the
+    // neighbor face.
+    reinitFEFaceNeighbor(_current_neighbor_side_elem, *reference_points_ptr);
+
+    // compute JxW on the neighbor's face
+    _current_JxW_neighbor.shallowCopy(const_cast<std::vector<Real> &>(
+        (*_holder_fe_face_neighbor_helper[_current_neighbor_side_elem->dim()])->get_JxW()));
+  }
+
+  reinitFEFaceNeighbor(neighbor, *reference_points_ptr);
+  reinitNeighbor(neighbor, *reference_points_ptr);
+}
+
+void
 Assembly::reinitElemFaceRef(const Elem * elem,
                             unsigned int elem_side,
                             Real tolerance,

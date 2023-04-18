@@ -2143,6 +2143,48 @@ FEProblemBase::reinitNeighbor(const Elem * elem, unsigned int side, THREAD_ID ti
 }
 
 void
+FEProblemBase::reinitPeriodicNeighbor(const Elem * elem,
+                                      unsigned int side,
+                                      const Elem * neighbor,
+                                      unsigned int neighbor_side,
+                                      THREAD_ID tid)
+{
+  setNeighborSubdomainID(neighbor, tid);
+
+  for (const auto i : index_range(_nl))
+  {
+    _assembly[tid][i]->reinitPeriodicElemAndNeighbor(elem, side, neighbor, neighbor_side);
+    _nl[i]->prepareNeighbor(tid);
+    // Called during stateful material property evaluation outside of solve
+    _assembly[tid][i]->prepareNeighbor();
+  }
+  _aux->prepareNeighbor(tid);
+
+  BoundaryID bnd_id = 0; // some dummy number (it is not really used for anything, right now)
+  for (auto & nl : _nl)
+  {
+    nl->reinitElemFace(elem, side, bnd_id, tid);
+    nl->reinitNeighborFace(neighbor, neighbor_side, bnd_id, tid);
+  }
+  _aux->reinitElemFace(elem, side, bnd_id, tid);
+  _aux->reinitNeighborFace(neighbor, neighbor_side, bnd_id, tid);
+
+  if (_displaced_problem && _reinit_displaced_neighbor)
+  {
+    // There are cases like for cohesive zone modeling without significant sliding where we cannot
+    // use FEInterface::inverse_map in Assembly::reinitElemAndNeighbor in the displaced problem
+    // because the physical points coming from the element don't actually lie on the neighbor. In
+    // that case we instead pass over the reference points from the undisplaced calculation
+    const std::vector<Point> * displaced_ref_pts = nullptr;
+    if (_displaced_neighbor_ref_pts == "use_undisplaced_ref")
+      displaced_ref_pts = &_assembly[tid][0]->qRuleNeighbor()->get_points();
+
+    _displaced_problem->reinitPeriodicNeighbor(
+        _displaced_mesh->elemPtr(elem->id()), side, neighbor, neighbor_side, tid, displaced_ref_pts);
+  }
+}
+
+void
 FEProblemBase::reinitElemNeighborAndLowerD(const Elem * elem, unsigned int side, THREAD_ID tid)
 {
   reinitNeighbor(elem, side, tid);

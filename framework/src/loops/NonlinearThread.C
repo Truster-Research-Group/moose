@@ -235,7 +235,7 @@ NonlinearThread::onInterface(const Elem * elem, unsigned int side, BoundaryID bn
 void
 NonlinearThread::onPeriodicBoundary(const Elem * elem, unsigned int side)
 {
-  // get neighbor stuff here
+  // get periodic neighbor
   unsigned int neighbor_side = 0;
   unsigned int * neighbor_side_ptr = &neighbor_side;
   const Elem * neighbor = elem->topological_neighbor_side(side,
@@ -256,8 +256,7 @@ NonlinearThread::onPeriodicBoundary(const Elem * elem, unsigned int side)
     {
       if (neighbor->active())
       {
-        // CHANGE NEIGHBOR STUFF HERE
-        _fe_problem.reinitNeighbor(elem, side, _tid);
+        _fe_problem.reinitPeriodicNeighbor(elem, side, neighbor, neighbor_side, _tid);
 
         // Set up Sentinels so that, even if one of the reinitMaterialsXXX() calls throws, we
         // still remember to swap back during stack unwinding. Note that face, boundary, and

@@ -698,6 +698,23 @@ public:
                              const std::vector<Point> * neighbor_reference_points = nullptr);
 
   /**
+   * Reinitialize a period boundary element and its neighbor along a particular side.
+   *
+   * @param elem Element being reinitialized
+   * @param side Side of the element
+   * @param neighbor Neighbor facing the element on the side 'side'
+   * @param neighbor_side The side id on the neighboring element.
+   * @param neighbor_reference_points Optional argument specifying the neighbor reference points. If
+   * not passed, then neighbor reference points will be determined by doing an inverse map based on
+   * the physical location of the \p elem quadrature points
+   */
+  void reinitPeriodicElemAndNeighbor(const Elem * elem,
+                                     unsigned int side,
+                                     const Elem * neighbor,
+                                     unsigned int neighbor_side,
+                                     const std::vector<Point> * neighbor_reference_points = nullptr);
+
+  /**
    * Reinitializes the neighbor at the physical coordinates on neighbor side given.
    */
   void reinitNeighborAtPhysical(const Elem * neighbor,

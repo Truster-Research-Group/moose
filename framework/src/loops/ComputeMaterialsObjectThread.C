@@ -317,11 +317,16 @@ ComputeMaterialsObjectThread::onInterface(const Elem * elem, unsigned int side, 
 void
 ComputeMaterialsObjectThread::onPeriodicBoundary(const Elem * elem, unsigned int side)
 {
-  // get neighbor stuff here
-  const Elem * neighbor = elem->neighbor_ptr(side);
+  // get periodic neighbor
+  unsigned int neighbor_side = 0;
+  unsigned int * neighbor_side_ptr = &neighbor_side;
+  const Elem * neighbor = elem->topological_neighbor_side(side,
+                                                      _mesh.getMesh(),
+                                                      *(_mesh.getMesh().sub_point_locator()),
+                                                      _nl.dofMap().get_periodic_boundaries(),
+                                                      neighbor_side_ptr);
   if (!neighbor)
     return;
-  unsigned int neighbor_side = neighbor->which_neighbor_am_i(_assembly[_tid][0]->elem());
 
   std::vector<BoundaryID> boundary_ids = _mesh.getBoundaryIDs(elem, side);
 
@@ -378,9 +383,7 @@ ComputeMaterialsObjectThread::onPeriodicBoundary(const Elem * elem, unsigned int
     if (neighbor->active() &&
         (_has_neighbor_stateful_props ||
          (_has_bnd_stateful_props && _interface_materials.hasActiveBoundaryObjects(bnd_id, _tid))))
-      _fe_problem.reinitNeighbor(elem, side, _tid);
-
-  // get neighbor stuff here DIFFERENTLY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      _fe_problem.reinitPeriodicNeighbor(elem, side, neighbor, neighbor_side, _tid);
 
     if (_has_neighbor_stateful_props && neighbor->active())
     {
