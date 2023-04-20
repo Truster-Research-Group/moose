@@ -316,11 +316,14 @@ ThreadedElementLoopBase<RangeType>::operator()(const RangeType & range, bool byp
           }
           else // handle weak periodic boundary enforcement using interface kernels
           {
-            prePeriodicBoundary(elem, side);
+            if (boundary_ids.size() > 0)
+            {
+              prePeriodicBoundary(elem, side);
 
-            onPeriodicBoundary(elem, side);
+              onPeriodicBoundary(elem, side);
 
-            postPeriodicBoundary(elem, side);
+              postPeriodicBoundary(elem, side);
+            }
           }
         } // sides
 
@@ -428,15 +431,14 @@ ThreadedElementLoopBase<RangeType>::prePeriodicBoundary(const Elem * /*elem*/,
 
 template <typename RangeType>
 void
-ThreadedElementLoopBase<RangeType>::onPeriodicBoundary(const Elem * /*elem*/,
-                                                        unsigned int /*side*/)
+ThreadedElementLoopBase<RangeType>::onPeriodicBoundary(const Elem * /*elem*/, unsigned int /*side*/)
 {
 }
 
 template <typename RangeType>
 void
 ThreadedElementLoopBase<RangeType>::postPeriodicBoundary(const Elem * /*elem*/,
-                                                        unsigned int /*side*/)
+                                                         unsigned int /*side*/)
 {
 }
 
