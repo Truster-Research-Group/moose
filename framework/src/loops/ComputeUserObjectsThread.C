@@ -312,6 +312,74 @@ ComputeUserObjectsThread::onInterface(const Elem * elem, unsigned int side, Boun
 }
 
 void
+ComputeUserObjectsThread::onPeriodicBoundary(const Elem * elem, unsigned int side)
+{
+  // get periodic neighbor
+  const auto neighbor_and_side = elem->topological_neighbor_side(side,
+                                                      _mesh.getMesh(),
+                                                      *(_mesh.getMesh().sub_point_locator()),
+                                                      _aux_sys.dofMap().get_periodic_boundaries());
+  const Elem * neighbor = neighbor_and_side.first;
+  unsigned int neighbor_side = neighbor_and_side.second;
+  if (!neighbor || !(neighbor->active()))
+    return;
+
+  std::vector<BoundaryID> boundary_ids = _mesh.getBoundaryIDs(elem, side);
+
+  for (std::vector<BoundaryID>::iterator it = boundary_ids.begin(); it != boundary_ids.end(); ++it)
+  {
+    BoundaryID bnd_id = *it;
+
+    std::vector<UserObject *> interface_objs;
+    queryBoundary(Interfaces::InterfaceUserObject, bnd_id, interface_objs);
+
+    bool has_domain_objs = false;
+    // we need to check all domain user objects because a domain user object may not be active
+    // on the current subdomain but should be executed on the interface that it attaches to
+    for (const auto * const domain_uo : _all_domain_objs)
+      if (domain_uo->shouldExecuteOnInterface())
+      {
+        has_domain_objs = true;
+        break;
+      }
+
+    // if we do not have any interface user objects and domain user objects on the current
+    // interface
+    if (interface_objs.empty() && !has_domain_objs)
+      return;
+
+    _fe_problem.prepareFace(elem, _tid);
+    _fe_problem.reinitPeriodicNeighbor(elem, side, neighbor, neighbor_side, _tid);
+
+    // Set up Sentinels so that, even if one of the reinitMaterialsXXX() calls throws, we
+    // still remember to swap back during stack unwinding.
+
+    SwapBackSentinel face_sentinel(_fe_problem, &FEProblem::swapBackMaterialsFace, _tid);
+    _fe_problem.reinitMaterialsFace(elem->subdomain_id(), _tid);
+    _fe_problem.reinitMaterialsBoundary(bnd_id, _tid);
+
+    SwapBackSentinel neighbor_sentinel(_fe_problem, &FEProblem::swapBackMaterialsNeighbor, _tid);
+    _fe_problem.reinitMaterialsNeighbor(neighbor->subdomain_id(), _tid);
+
+    // Has to happen after face and neighbor properties have been computed. Note that we don't use
+    // a sentinel here because FEProblem::swapBackMaterialsFace is going to handle face materials,
+    // boundary materials, and interface materials (e.g. it queries the boundary material data
+    // with the current element and side
+    _fe_problem.reinitMaterialsInterface(bnd_id, _tid);
+
+    for (const auto & uo : interface_objs)
+      uo->execute();
+
+    for (auto & uo : _all_domain_objs)
+      if (uo->shouldExecuteOnInterface())
+      {
+        uo->preExecuteOnInterface();
+        uo->executeOnInterface();
+      }
+  }
+}
+
+void
 ComputeUserObjectsThread::post()
 {
   _fe_problem.clearActiveElementalMooseVariables(_tid);
