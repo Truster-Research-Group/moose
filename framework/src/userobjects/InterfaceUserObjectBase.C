@@ -40,6 +40,7 @@ InterfaceUserObjectBase::InterfaceUserObjectBase(const InputParameters & paramet
     ElementIDInterface(this),
     _mesh(_subproblem.mesh()),
     _q_point(_assembly.qPointsFace()),
+    _q_point_neighbor(_assembly.qPointsFaceNeighbor()),
     _qrule(_assembly.qRuleFace()),
     _JxW(_assembly.JxWFace()),
     _coord(_assembly.coordTransformation()),

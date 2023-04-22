@@ -89,6 +89,7 @@ InterfaceKernelBase::InterfaceKernelBase(const InputParameters & parameters)
     _current_side_volume(_assembly.sideElemVolume()),
     _coord_sys(_assembly.coordSystem()),
     _q_point(_assembly.qPointsFace()),
+    _q_point_neighbor(_assembly.qPointsFaceNeighbor()),
     _qrule(_assembly.qRuleFace()),
     _JxW(_assembly.JxWFace()),
     _coord(_assembly.coordTransformation()),
