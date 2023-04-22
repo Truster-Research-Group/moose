@@ -52,6 +52,7 @@ public:
                           const Elem * lower_d_elem = nullptr) override;
   virtual void onInternalSide(const Elem * elem, unsigned int side) override;
   virtual void onInterface(const Elem * elem, unsigned int side, BoundaryID bnd_id) override;
+  virtual void onPeriodicBoundary(const Elem * elem, unsigned int side) override;
   virtual void post() override;
   virtual void subdomainChanged() override;
 

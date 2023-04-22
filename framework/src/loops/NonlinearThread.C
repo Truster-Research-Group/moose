@@ -236,13 +236,12 @@ void
 NonlinearThread::onPeriodicBoundary(const Elem * elem, unsigned int side)
 {
   // get periodic neighbor
-  unsigned int neighbor_side = 0;
-  unsigned int * neighbor_side_ptr = &neighbor_side;
-  const Elem * neighbor = elem->topological_neighbor_side(side,
+  const auto neighbor_and_side = elem->topological_neighbor_side(side,
                                                       _mesh.getMesh(),
                                                       *(_mesh.getMesh().sub_point_locator()),
-                                                      _nl.dofMap().get_periodic_boundaries(),
-                                                      neighbor_side_ptr);
+                                                      _nl.dofMap().get_periodic_boundaries());
+  const Elem * neighbor = neighbor_and_side.first;
+  unsigned int neighbor_side = neighbor_and_side.second;
   if (!neighbor || !(neighbor->active()))
     return;
 
