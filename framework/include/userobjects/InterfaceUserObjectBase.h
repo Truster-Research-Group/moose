@@ -47,7 +47,10 @@ protected:
 
   MooseMesh & _mesh;
 
+  /// Array that holds element quadrature point coordinates
   const MooseArray<Point> & _q_point;
+  /// Array that holds neighbor quadrature point coordinates
+  const MooseArray<Point> & _q_point_neighbor;
   const QBase * const & _qrule;
   const MooseArray<Real> & _JxW;
   const MooseArray<Real> & _coord;

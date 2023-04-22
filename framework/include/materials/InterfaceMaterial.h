@@ -122,7 +122,10 @@ protected:
   virtual const QBase & qRule() const override { return *_qrule; }
 
   bool _bnd;
+  /// Array that holds element quadrature point coordinates
   const MooseArray<Point> & _q_point;
+  /// Array that holds neighbor quadrature point coordinates
+  const MooseArray<Point> & _q_point_neighbor;
   const QBase * const & _qrule;
   const MooseArray<Real> & _JxW;
 

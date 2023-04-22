@@ -106,6 +106,9 @@ protected:
   /// Array that holds element quadrature point coordinates
   const MooseArray<Point> & _q_point;
 
+  /// Array that holds neighbor quadrature point coordinates
+  const MooseArray<Point> & _q_point_neighbor;
+
   /// Quadrature rule
   const QBase * const & _qrule;
 
