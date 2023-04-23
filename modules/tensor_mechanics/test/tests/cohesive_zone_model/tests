@@ -315,6 +315,44 @@
     []
   []
 
+  [bilinear_split_mode]
+    design = 'source/materials/cohesive_zone_model/BiLinearMixedModeTraction.md'
+    requirement = 'The system shall be able to model cohesive surfaces with periodic boundaries and split names'
+    issues = '#24140'
+    [normal]
+      type = Exodiff
+      input = 'bilinear_split.i'
+      exodiff = bilinear_split_out.e
+      abs_zero = 1e-6
+      rel_err = 1e-5
+      detail = "from a generated mesh with 1 interface."
+    []
+    [topo]
+      type = Exodiff
+      input = 'bilinear_topo.i'
+      exodiff = bilinear_topo_out.e
+      abs_zero = 1e-6
+      rel_err = 1e-5
+      detail = "from a reloaded mesh with 1 interface."
+    []
+    [refined]
+      type = Exodiff
+      input = 'bilinear_refined.i'
+      exodiff = bilinear_refined_out.e
+      abs_zero = 1e-6
+      rel_err = 1e-5
+      detail = "from a generated mesh with multiple interfaces."
+    []
+    [ref_topo]
+      type = Exodiff
+      input = 'bilinear_ref_topo.i'
+      exodiff = bilinear_ref_topo_out.e
+      abs_zero = 1e-6
+      rel_err = 1e-5
+      detail = "from a reloaded mesh with multiple interfaces."
+    []
+  []
+
   [material_3DC]
     design = 'source/materials/cohesive_zone_model/SalehaniIrani3DCTraction.md'
     issues = '#11546 #14527 #17156'
