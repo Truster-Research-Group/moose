@@ -128,7 +128,7 @@
   nl_abs_tol = 1e-15
   start_time = 0.0
   dt = 0.1
-  end_time = 1.0
+  end_time = 0.2
   dtmin = 0.1
 []
 
