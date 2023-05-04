@@ -277,6 +277,13 @@ ADInterfaceKernelTempl<T>::computeNeighborOffDiagJacobian(unsigned int jvar)
   computeOffDiagElemNeighJacobian(Moose::NeighborNeighbor, jvar);
 }
 
+template <typename T>
+void
+ADInterfaceKernelTempl<T>::computeResidualAndJacobian()
+{
+  computeJacobian();
+}
+
 // Explicitly instantiates the two versions of the ADInterfaceKernelTempl class
 template class ADInterfaceKernelTempl<Real>;
 template class ADInterfaceKernelTempl<RealVectorValue>;
