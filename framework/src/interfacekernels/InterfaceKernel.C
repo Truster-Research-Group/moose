@@ -175,6 +175,7 @@ InterfaceKernelTempl<T>::computeElemNeighResidual(Moose::DGResidualType type)
     for (_i = 0; _i < test_space.size(); _i++)
       _local_re(_i) += _JxW[_qp] * _coord[_qp] * computeQpResidual(type);
   }
+  std::cout << "_local_re" << _local_re << std::endl;
 
   accumulateTaggedLocalResidual();
 

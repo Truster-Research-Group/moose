@@ -20,6 +20,7 @@
 
 #include "libmesh/threads.h"
 #include "libmesh/quadrature.h"
+#include "libmesh/periodic_boundaries.h" // translation PBCs provided by libmesh
 
 ComputeMaterialsObjectThread::ComputeMaterialsObjectThread(
     FEProblemBase & fe_problem,
@@ -317,6 +318,9 @@ ComputeMaterialsObjectThread::onInterface(const Elem * elem, unsigned int side, 
 void
 ComputeMaterialsObjectThread::onPeriodicBoundary(const Elem * elem, unsigned int side)
 {
+  if (_nl.dofMap().get_periodic_boundaries()->empty())
+    return;
+
   // get periodic neighbor
   const auto neighbor_and_side = elem->topological_neighbor_side(side,
                                                       _mesh.getMesh(),

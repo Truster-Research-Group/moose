@@ -25,6 +25,7 @@
 #include "MooseTypes.h"
 
 #include "libmesh/numeric_vector.h"
+#include "libmesh/periodic_boundaries.h" // translation PBCs provided by libmesh
 
 ComputeUserObjectsThread::ComputeUserObjectsThread(FEProblemBase & problem,
                                                    SystemBase & sys,
@@ -314,6 +315,9 @@ ComputeUserObjectsThread::onInterface(const Elem * elem, unsigned int side, Boun
 void
 ComputeUserObjectsThread::onPeriodicBoundary(const Elem * elem, unsigned int side)
 {
+  if (_aux_sys.dofMap().get_periodic_boundaries()->empty())
+    return;
+
   // get periodic neighbor
   const auto neighbor_and_side = elem->topological_neighbor_side(side,
                                                       _mesh.getMesh(),
