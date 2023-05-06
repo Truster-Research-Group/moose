@@ -64,7 +64,7 @@ PenaltyInterfaceDiffusionTempl<T, is_ad>::computeQpResidual(Moose::DGResidualTyp
       break;
   }
 
-  std::cout << "penalty r" <<  r << std::endl;
+  // std::cout << "penalty r" <<  r << std::endl;
   return r;
 }
 

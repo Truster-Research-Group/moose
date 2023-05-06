@@ -1872,6 +1872,16 @@ Assembly::reinitElemAndNeighbor(const Elem * elem,
 
   reinit(elem, side);
 
+  std::vector<Point> elem_physical_points = _current_q_points_face.stdVector();
+  Point pe = elem->build_side_ptr(side)->vertex_average();
+  Point pn = neighbor->build_side_ptr(neighbor_side)->vertex_average();
+  Point offset = pn - pe;
+  for (auto & each_point : elem_physical_points)
+  {
+    each_point += offset;
+  }
+  // std::cout << "offset" << offset << std::endl;
+
   unsigned int neighbor_dim = neighbor->dim();
 
   const std::vector<Point> * reference_points_ptr;
@@ -1882,9 +1892,10 @@ Assembly::reinitElemAndNeighbor(const Elem * elem,
   else
   {
     FEInterface::inverse_map(
-        neighbor_dim, FEType(), neighbor, _current_q_points_face.stdVector(), reference_points);
+        neighbor_dim, FEType(), neighbor, elem_physical_points, reference_points);
     reference_points_ptr = &reference_points;
   }
+  // std::cout << "reference_points" << reference_points.front() << std::endl;
 
   _current_neighbor_side_elem = &_current_neighbor_side_elem_builder(*neighbor, neighbor_side);
 
@@ -1922,6 +1933,7 @@ Assembly::reinitPeriodicElemAndNeighbor(const Elem * elem,
   {
     each_point += offset;
   }
+  // std::cout << "offset" << offset << std::endl;
 
   unsigned int neighbor_dim = neighbor->dim();
 
@@ -1936,6 +1948,7 @@ Assembly::reinitPeriodicElemAndNeighbor(const Elem * elem,
         neighbor_dim, FEType(), neighbor, elem_physical_points, reference_points);
     reference_points_ptr = &reference_points;
   }
+  // std::cout << "reference_points" << reference_points.front() << std::endl;
 
   _current_neighbor_side_elem = &_current_neighbor_side_elem_builder(*neighbor, neighbor_side);
 
