@@ -156,6 +156,5 @@ protected:
   DenseMatrix<Number> _local_kxx;
   
   /// Used internally to iterate over each scalar component
-  unsigned int _h;
   unsigned int _l;  
 };

@@ -300,10 +300,17 @@ ComputeFullJacobianThread::computeOnInterface(BoundaryID bnd_id)
                 unsigned int ivar = ivariable->number();
                 unsigned int jvar = jvariable->number();
                 if (interface_kernel->variable().number() == ivar)
+                {
+                  std::cout << "computeElementOffDiagJacobianScalar " << ivar << jvar << std::endl;
                   interface_kernel->computeElementOffDiagJacobianScalar(jvar);
+                }
+  
 
                 if (interface_kernel->neighborVariable().number() == ivar)
+                {
+                  std::cout << "computeNeighborOffDiagJacobianScalar " << ivar << jvar << std::endl;
                   interface_kernel->computeNeighborOffDiagJacobianScalar(jvar);
+                }
               }
           }
       }

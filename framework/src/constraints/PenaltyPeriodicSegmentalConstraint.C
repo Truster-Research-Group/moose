@@ -151,9 +151,11 @@ PenaltyPeriodicSegmentalConstraint::computeQpOffDiagJacobianScalar(
 
     case Moose::MortarType::Secondary: // Residual_sign -1  ddeltaU_ddisp sign 1;
       jac *= _test_secondary[_i][_qp] * dx(_h);
+      jac = 5;
       break;
     case Moose::MortarType::Primary: // Residual_sign -1  ddeltaU_ddisp sign -1;
       jac *= -_test_primary[_i][_qp] * dx(_h);
+      jac = -4;
       break;
 
     default:
@@ -189,9 +191,11 @@ PenaltyPeriodicSegmentalConstraint::computeScalarQpOffDiagJacobian(
   {
     case Moose::MortarType::Secondary:
       jac *= (*_phi)[_j][_qp] * dx(_h);
+      jac = 5;
       break;
     case Moose::MortarType::Primary:
       jac *= -(*_phi)[_j][_qp] * dx(_h);
+      jac = -4;
       break;
 
     default:

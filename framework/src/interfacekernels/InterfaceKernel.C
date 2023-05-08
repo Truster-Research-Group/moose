@@ -175,7 +175,7 @@ InterfaceKernelTempl<T>::computeElemNeighResidual(Moose::DGResidualType type)
     for (_i = 0; _i < test_space.size(); _i++)
       _local_re(_i) += _JxW[_qp] * _coord[_qp] * computeQpResidual(type);
   }
-  std::cout << "_local_re" << _local_re << std::endl;
+  //std::cout << "_local_re" << _local_re << std::endl;
 
   accumulateTaggedLocalResidual();
 
@@ -442,6 +442,7 @@ InterfaceKernelTempl<T>::computeElementOffDiagJacobianScalar(unsigned int svar_n
       for (_l = 0; _l < s_order; _l++)
         _local_ke(_i, _l) += _JxW[_qp] * _coord[_qp] * computeQpOffDiagJacobianScalar(Moose::Element, svar_num);
   }
+  std::cout << "_local_ke" << _local_ke << std::endl;
 
   for (const auto & matrix_tag : _matrix_tags)
     _assembly.cacheJacobianBlock(
@@ -465,6 +466,7 @@ InterfaceKernelTempl<T>::computeNeighborOffDiagJacobianScalar(unsigned int svar_
       for (_l = 0; _l < s_order; _l++)
         _local_ke(_i, _l) += _JxW[_qp] * _coord[_qp] * computeQpOffDiagJacobianScalar(Moose::Neighbor, svar_num);
   }
+  std::cout << "_local_ke" << _local_ke << std::endl;
 
   for (const auto & matrix_tag : _matrix_tags)
     _assembly.cacheJacobianBlock(
