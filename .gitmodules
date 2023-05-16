@@ -2,7 +2,7 @@
     path = libmesh
     url = git@github.com:ttruster/libmesh.git
     ignore = dirty
-    branch = topological-neighbor-PBC
+    branch = weak-enforcement-PBC
 [submodule "large_media"]
     path = large_media
     url = ../../idaholab/large_media
