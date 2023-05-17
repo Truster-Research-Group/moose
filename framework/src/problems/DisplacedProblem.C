@@ -779,7 +779,7 @@ DisplacedProblem::reinitNeighbor(const Elem * elem,
 
   for (const auto nl_sys_num : index_range(_displaced_nl))
   {
-    _assembly[tid][nl_sys_num]->reinitElemAndNeighbor(
+    _assembly[tid][nl_sys_num]->reinitPeriodicElemAndNeighbor(
         elem, side, neighbor, neighbor_side, neighbor_reference_points);
     _displaced_nl[nl_sys_num]->prepareNeighbor(tid);
     // Called during stateful material property evaluation outside of solve
@@ -819,7 +819,7 @@ DisplacedProblem::reinitPeriodicNeighbor(const Elem * elem,
 
   for (const auto nl_sys_num : index_range(_displaced_nl))
   {
-    _assembly[tid][nl_sys_num]->reinitElemAndNeighbor(
+    _assembly[tid][nl_sys_num]->reinitPeriodicElemAndNeighbor(
         elem, side, neighbor, neighbor_side, neighbor_reference_points);
     _displaced_nl[nl_sys_num]->prepareNeighbor(tid);
     // Called during stateful material property evaluation outside of solve

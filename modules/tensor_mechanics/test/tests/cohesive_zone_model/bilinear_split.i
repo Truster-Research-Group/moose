@@ -137,8 +137,8 @@
   solve_type = 'NEWTON'
   line_search = none
 
-  petsc_options_iname = '-pc_type'
-  petsc_options_value = 'lu'
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -mat_view -vec_view'
+  petsc_options_value = 'lu superlu_dist ::ascii_matlab ::ascii_matlab'
 
   automatic_scaling = true
 
@@ -149,7 +149,7 @@
   nl_abs_tol = 1e-15
   start_time = 0.0
   dt = 0.1
-  end_time = 1.0
+  end_time = 0.2
   dtmin = 0.1
 []
 

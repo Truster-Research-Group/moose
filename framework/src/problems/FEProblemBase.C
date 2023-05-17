@@ -2112,7 +2112,7 @@ FEProblemBase::reinitNeighbor(const Elem * elem, unsigned int side, THREAD_ID ti
 
   for (const auto i : index_range(_nl))
   {
-    _assembly[tid][i]->reinitElemAndNeighbor(elem, side, neighbor, neighbor_side);
+    _assembly[tid][i]->reinitPeriodicElemAndNeighbor(elem, side, neighbor, neighbor_side);
     _nl[i]->prepareNeighbor(tid);
     // Called during stateful material property evaluation outside of solve
     _assembly[tid][i]->prepareNeighbor();

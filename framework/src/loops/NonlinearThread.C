@@ -235,6 +235,9 @@ NonlinearThread::onInterface(const Elem * elem, unsigned int side, BoundaryID bn
 void
 NonlinearThread::onPeriodicBoundary(const Elem * elem, unsigned int side)
 {
+  if (_nl.dofMap().get_periodic_boundaries()->empty())
+    return;
+
   // get periodic neighbor
   const auto neighbor_and_side = elem->topological_neighbor_side(side,
                                                       _mesh.getMesh(),
