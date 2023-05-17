@@ -2175,9 +2175,7 @@ FEProblemBase::reinitPeriodicNeighbor(const Elem * elem,
     // use FEInterface::inverse_map in Assembly::reinitElemAndNeighbor in the displaced problem
     // because the physical points coming from the element don't actually lie on the neighbor. In
     // that case we instead pass over the reference points from the undisplaced calculation
-    const std::vector<Point> * displaced_ref_pts = nullptr;
-    if (_displaced_neighbor_ref_pts == "use_undisplaced_ref")
-      displaced_ref_pts = &_assembly[tid][0]->qRuleNeighbor()->get_points();
+    const auto & displaced_ref_pts = &_assembly[tid][0]->qRuleNeighbor()->get_points();
 
     _displaced_problem->reinitPeriodicNeighbor(
         _displaced_mesh->elemPtr(elem->id()), side, neighbor, neighbor_side, tid, displaced_ref_pts);
