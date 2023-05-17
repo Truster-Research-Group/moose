@@ -467,7 +467,7 @@ InterfaceKernelTempl<T>::computeNeighborOffDiagJacobianScalar(unsigned int svar_
 
   for (const auto & matrix_tag : _matrix_tags)
     _assembly.cacheJacobianBlock(
-        _local_ke, _neighbor_var.dofIndices(), svar.dofIndices(), _neighbor_var.scalingFactor(), matrix_tag); 
+        _local_ke, _neighbor_var.dofIndicesNeighbor(), svar.dofIndices(), _neighbor_var.scalingFactor(), matrix_tag); 
 }
 
 template <typename T>
