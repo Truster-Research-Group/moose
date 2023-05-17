@@ -71,6 +71,12 @@ public:
   /// Selects the correct Jacobian type and routine to call for the secondary variable jacobian
   virtual void computeNeighborOffDiagJacobian(unsigned int jvar) override;
 
+  /// Selects the correct Jacobian type and routine to call for the primary variable jacobian
+  virtual void computeElementOffDiagJacobianScalar(unsigned int svar) override;
+
+  /// Selects the correct Jacobian type and routine to call for the secondary variable jacobian
+  virtual void computeNeighborOffDiagJacobianScalar(unsigned int svar) override;
+
   /// Computes the residual for the current side.
   virtual void computeResidual() override;
 
@@ -148,4 +154,8 @@ protected:
   /// Holds residual entries as they are accumulated by this InterfaceKernel
   /// This variable is temporarily reserved for RattleSnake
   DenseMatrix<Number> _local_kxx;
+  
+  /// Used internally to iterate over each scalar component
+  unsigned int _h;
+  unsigned int _l;  
 };

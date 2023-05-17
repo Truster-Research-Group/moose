@@ -12,6 +12,7 @@
 // MOOSE includes
 #include "Assembly.h"
 #include "MooseVariableFE.h"
+#include "MooseVariableScalar.h"
 #include "SystemBase.h"
 
 #include "libmesh/quadrature.h"
@@ -421,6 +422,52 @@ InterfaceKernelTempl<T>::computeNeighborOffDiagJacobian(unsigned int jvar)
     computeOffDiagElemNeighJacobian(Moose::NeighborElement, jvar);
     computeOffDiagElemNeighJacobian(Moose::NeighborNeighbor, jvar);
   }
+}
+
+template <typename T>
+void
+InterfaceKernelTempl<T>::computeElementOffDiagJacobianScalar(unsigned int svar_num)
+{
+	precalculateElementOffDiagJacobianScalar(svar_num);
+  // Get dofs and order of this scalar; at least one will be _kappa_var
+  const auto & svar = _sys.getScalarVariable(_tid, svar_num);
+  const unsigned int s_order = svar.order();
+  _local_ke.resize(_test.size(), s_order);
+
+  for (_qp = 0; _qp < _qrule->n_points(); _qp++)
+  {
+    initQpJacobianScalar(svar_num);
+    for (_i = 0; _i < _test.size(); _i++)
+      for (_l = 0; _l < s_order; _l++)
+        _local_ke(_i, _l) += _JxW[_qp] * _coord[_qp] * computeQpOffDiagJacobianScalar(Moose::Element, svar_num);
+  }
+
+  for (const auto & matrix_tag : _matrix_tags)
+    _assembly.cacheJacobianBlock(
+        _local_ke, _var.dofIndices(), svar.dofIndices(), _var.scalingFactor(), matrix_tag); 
+}
+
+template <typename T>
+void
+InterfaceKernelTempl<T>::computeNeighborOffDiagJacobianScalar(unsigned int svar_num)
+{
+	precalculateNeighborOffDiagJacobianScalar(svar_num);
+  // Get dofs and order of this scalar; at least one will be _kappa_var
+  const auto & svar = _sys.getScalarVariable(_tid, svar_num);
+  const unsigned int s_order = svar.order();
+  _local_ke.resize(_test_neighbor.size(), s_order);
+
+  for (_qp = 0; _qp < _qrule->n_points(); _qp++)
+  {
+    initQpJacobianScalar(svar_num);
+    for (_i = 0; _i < _test_neighbor.size(); _i++)
+      for (_l = 0; _l < s_order; _l++)
+        _local_ke(_i, _l) += _JxW[_qp] * _coord[_qp] * computeQpOffDiagJacobianScalar(Moose::Neighbor, svar_num);
+  }
+
+  for (const auto & matrix_tag : _matrix_tags)
+    _assembly.cacheJacobianBlock(
+        _local_ke, _neighbor_var.dofIndices(), svar.dofIndices(), _neighbor_var.scalingFactor(), matrix_tag); 
 }
 
 template <typename T>
