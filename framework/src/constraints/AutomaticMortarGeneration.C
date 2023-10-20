@@ -466,7 +466,7 @@ AutomaticMortarGeneration::buildMortarSegmentMesh()
     for (MooseIndex(secondary_elem->n_nodes()) n = 0; n < secondary_elem->n_nodes(); ++n)
     {
       new_nodes.push_back(_mortar_segment_mesh->add_point(
-          secondary_elem->point(n), secondary_elem->node_id(n), secondary_elem->processor_id()));
+          secondary_elem->point(n) - _boundary_offset, secondary_elem->node_id(n), secondary_elem->processor_id()));
       Node * const new_node = new_nodes.back();
       new_node->set_unique_id(new_node->id() + node_unique_id_offset);
     }
@@ -554,7 +554,7 @@ AutomaticMortarGeneration::buildMortarSegmentMesh()
     // Determine physical location of new point to be inserted.
     Point new_pt(0);
     for (MooseIndex(secondary_elem->n_nodes()) n = 0; n < secondary_elem->n_nodes(); ++n)
-      new_pt += Moose::fe_lagrange_1D_shape(order, n, xi1) * secondary_elem->point(n);
+      new_pt += Moose::fe_lagrange_1D_shape(order, n, xi1) * (secondary_elem->point(n) - _boundary_offset);
 
     // Find the current mortar segment that will have to be split.
     auto & mortar_segment_set = _secondary_elems_to_mortar_segments[secondary_elem->id()];
@@ -632,7 +632,7 @@ AutomaticMortarGeneration::buildMortarSegmentMesh()
 
     // Store z-component of left and right secondary node cross products with the nodal normal.
     for (unsigned int nid = 0; nid < 2; ++nid)
-      secondary_node_cps[nid] = normal.cross(secondary_elem->point(nid) - new_pt)(2);
+      secondary_node_cps[nid] = normal.cross((secondary_elem->point(nid) - _boundary_offset) - new_pt)(2);
 
     for (MooseIndex(primary_node_neighbors) mnn = 0; mnn < primary_node_neighbors.size(); ++mnn)
     {
